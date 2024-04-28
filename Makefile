@@ -25,7 +25,7 @@ clean:
         docker compose -f ./srcs/docker-compose.yml --env-file ./srcs/.env down --rmi all --volumes
 
 fclean:
-        docker stop $$(docker ps -qa) 
+        docker stop $$(docker ps -qa)
         docker system prune --all --force
         docker network prune --force
         docker volume prune --force
