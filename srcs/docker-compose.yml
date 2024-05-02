@@ -1,42 +1,66 @@
 version: '3'
-services:
-    nginx:
-      build: 
-        context: requirements/nginx
-        dockerfile: Dockerfile
-      container_name: nginx
-      volumes:
-      - nginx:/var/www/html/
-      image: nginx
-      ports:
-      - "8000:8000"
-      restart: always
-volumes:
-        nginx:
-                driver: local
-                driver_opts:
-                        type: none
-                        o: bind
-                        device: /home/ubuntu/data/nginx
 
-    wordpress:
-      build:
-        context: requirements/wordpress
-        dockerfile: Dockerfile
-      container_name: wordpress
-      volumes:
-      - wordpress:/var/www/html/
-      image: wordpress
-      restart: always
+services:
+  wordpress:
+    build:
+      context: requirements/wordpress
+      dockerfile: Dockerfile
+    depends_on:
+      - mariadb
+    networks:
+      - inception-network
+    env_file:
+      - .env
+    container_name: wordpress
+    volumes:
+      - wordpress:/var/www/html/wordpress
+    image: wordpress
+    restart: always
+  nginx:
+    build: 
+      context: requirements/nginx
+      dockerfile: Dockerfile
+    depends_on:
+      - wordpress
+    networks:
+      - inception-network
+    container_name: nginx
+    volumes:
+      - wordpress:/var/www/html/wordpress
+    image: nginx
+    ports:
+      - 443:443
+    restart: always
+  mariadb:
+    build:
+      context: requirements/mariadb
+      dockerfile: Dockerfile
+    networks:
+      - inception-network
+    env_file:
+      - .env
+    container_name: mariadb
+    volumes:
+      - mariadb:/var/lib/mysql
+    image: mariadb
+    restart: always
+
 volumes:
-        wordpress:
-                driver: local
-                driver_opts:
-                        type: none
-                        o: bind
-                        device: /home/ubuntu/data/nginx
+  wordpress:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /home/ubuntu/data/wordpress
+    
+  mariadb:
+     driver: local
+     driver_opts:
+       type: none
+       o: bind
+       device: /home/ubuntu/data/mariadb
 
 networks:
-        network:
-                name: inception-network
-                driver: bridge
+  inception-network:
+    name: inception-network
+    driver: bridge
