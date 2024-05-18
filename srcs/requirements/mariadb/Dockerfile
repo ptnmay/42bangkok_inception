@@ -1,28 +1,27 @@
-FROM	debian:bullseye
+# Mariadb
+FROM    debian:bullseye
 
 # System setting
-RUN	apt update
+RUN     apt update
 
-# Debug
-RUN	apt install vim -y
+# debugging
+RUN     apt install vim -y
 
 # Mariadb install
+RUN     apt install mariadb-server -y
 
-RUN	apt install mariadb-server -y
-
-RUN	mkdir -p /var/run/mysqld && \
-	chown -R mysql:mysql /var/run/mysqld && \
-	chmod -R 777 /var/run/mysqld
+RUN     mkdir -p /var/run/mysqld && \
+        chown -R mysql:mysql /var/run/mysqld && \
+        chmod -R 777 /var/run/mysqld
 
 # Script
-COPY	./tools/mariadb.sh /home/
+COPY    ./tools/mariadb.sh /home/
 
 # Config
-COPY	./conf/50-server.cnf /etc/mysql/mariadb.conf.d/
+COPY    ./conf/50-server.cnf /etc/mysql/mariadb.conf.d/
 
-RUN	chmod 755 /home/mariadb.sh
+RUN     chmod 755 /home/mariadb.sh
 
 ENTRYPOINT ["/home/mariadb.sh"]
-CMD	["mysqld"] 
-
-#CMD ["tail", "-f"]
+#CMD    ["tail" , "-f"]
+CMD     ["mysqld"]

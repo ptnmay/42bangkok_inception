@@ -1,36 +1,29 @@
-VOLUME_DIR = /home/ubuntu/data
+VOLUME_DIR = ~/data
 
 all: create up
 
 create:
 	mkdir -p ${VOLUME_DIR}/wordpress
 	mkdir -p ${VOLUME_DIR}/mariadb
-
 up:
-	#docker compose -f ./srcs/docker-compose.yml   up -d --build
-	docker compose -f ./srcs/docker-compose.yml --env-file ./srcs/.env up -d --build
+	docker compose -f ./srcs/docker-compose.yml up -d --build
 
 down:
 	docker exec -it wordpress sh -c "rm -rf /var/www/html/wordpress/*"
 	docker exec -it mariadb sh -c "rm -rf /var/lib/mysql/*"
-	docker compose -f ./srcs/docker-compose.yml --env-file ./srcs/.env down
+	docker compose -f ./srcs/docker-compose.yml down
 
-start:
-	docker compose -f ./srcs/docker-compose.yml start
+clean: down
+	docker rmi mariadb nginx wordpress
 
-stop:
-	docker compose -f ./srcs/docker-compose.yml stop
-
-re: down up
-
-clean:
-	docker compose -f ./srcs/docker-compose.yml --env-file ./srcs/.env down --rmi all --volumes
-
-fclean:
-	docker stop $$(docker ps -qa)
-	docker system prune --all --force
-	docker network prune --force
-	docker volume prune --force
-	rm -rf ${VOLUME_DIR}
+fclean: clean
+	docker system prune -af
+	docker volume prune -f
+	rm -rf $(VOLUME_DIR)
+#	docker run --rm -v ${VOLUME_DIR}:/var/www/html/wordpress -w /app debian:bullseye rm -rf /var/www/html/*
+#	docker run --rm -v ${VOLUME_DIR}:/var/lib/mysql -w /app debian:bullseye rm -rf /var/lib/mysql/*
+	#docker stop $$(docker ps -qa)
+#	docker system prune --all --force
 
 .PHONY : all create up down start stop re clean fclean
+
